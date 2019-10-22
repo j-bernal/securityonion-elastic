@@ -51,14 +51,6 @@ echo "Temporarily increasing script.max_compilations.rate..."
 curl ${ELASTICSEARCH_AUTH} -XPUT http://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/_cluster/settings -H 'Content-Type: application/json' -d'{ "transient" : { "script.max_compilations_rate" : "100000/1m" } }'
 echo; echo
 
-echo "Deleting existing pipelines..."
-for i in *; do echo $i; curl ${ELASTICSEARCH_AUTH} -XDELETE http://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/_ingest/pipeline/$i -H 'Content-Type: application/json' ; echo; done
-echo; echo
-
-echo "List of current pipelines (should be none)"
-curl ${ELASTICSEARCH_AUTH} -XGET http://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/_ingest/pipeline/
-echo; echo
-
 echo "Loading pipelines..."
 for i in *; do echo $i; curl ${ELASTICSEARCH_AUTH} -XPUT http://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/_ingest/pipeline/$i -H 'Content-Type: application/json' -d@$i; echo; done
 echo
