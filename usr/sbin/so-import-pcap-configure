@@ -303,13 +303,16 @@ if ! grep -q "LOGSTASH_OUTPUT_INGEST" /etc/nsm/securityonion.conf; then
 	echo "- updating Elastic config."
 	echo 'LOGSTASH_OUTPUT_INGEST="yes"' >> /etc/nsm/securityonion.conf
 	/usr/sbin/so-elasticsearch-stop >/dev/null 2>&1
-	/usr/sbin/so-logstash-stop >/dev/null 2>&1
-	ES_HEAP_SIZE="400m"
-	sed -i "s/^-Xms.*/-Xms$ES_HEAP_SIZE/" /etc/elasticsearch/jvm.options
-	sed -i "s/^-Xmx.*/-Xmx$ES_HEAP_SIZE/" /etc/elasticsearch/jvm.options
+	TOTAL_MEM=`grep MemTotal /proc/meminfo | awk '{print $2}' | sed -r 's/.{3}$//'`
+	if [ $TOTAL_MEM -lt 9000 ]; then
+		ES_HEAP_SIZE="400m"
+		sed -i "s/^-Xms.*/-Xms$ES_HEAP_SIZE/" /etc/elasticsearch/jvm.options
+		sed -i "s/^-Xmx.*/-Xmx$ES_HEAP_SIZE/" /etc/elasticsearch/jvm.options
+	fi
 	CLUSTER_NAME=$(grep "cluster.name" /etc/elasticsearch/elasticsearch.yml | tail -1 | cut -d\" -f2)
 	rm -f /var/log/elasticsearch/${CLUSTER_NAME}.log
 	/usr/sbin/so-elasticsearch-start >/dev/null 2>&1
+	/usr/sbin/so-logstash-stop >/dev/null 2>&1
 	sed -i 's|30s|1s|g' /etc/logstash/*-template.json
 	LS_HEAP_SIZE="200m"
 	sed -i "s/^-Xms.*/-Xms$LS_HEAP_SIZE/" /etc/logstash/jvm.options
