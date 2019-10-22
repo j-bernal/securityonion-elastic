@@ -14,7 +14,7 @@
 		"target_field": "destination_geo",
 		"database_file": "GeoLite2-City.mmdb",
 		"ignore_missing": true, 
-		"properties": ["ip", "country_iso_code", "country_name", "continent_name", "region_iso_code", "region_name", "city_name", "timezone", "location"]
+		"properties": ["ip", "country_name", "region_iso_code", "region_name", "city_name", "timezone", "location"]
 	}
     },
     { 
@@ -23,7 +23,7 @@
 		"target_field": "source_geo",
 		"database_file": "GeoLite2-City.mmdb",
 		"ignore_missing": true,
-		"properties": ["ip", "country_iso_code", "country_name", "continent_name", "region_iso_code", "region_name", "city_name", "timezone", "location"]
+		"properties": ["ip", "country_name", "region_iso_code", "region_name", "city_name", "timezone", "location"]
 	}
     },
     { 
