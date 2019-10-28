@@ -1,7 +1,15 @@
 Package: *
-Pin: release o=Docker,a=trusty,l=Docker CE,c=stable
+Pin: release o=Docker,a=xenial,l=Docker CE,c=stable,b=amd64
 Pin-Priority: 400
 
+Package: containerd.io
+Pin: release o=Docker,a=xenial,l=Docker CE,c=stable,b=amd64
+Pin-Priority: 500
+
 Package: docker-ce
-Pin: release o=Docker,a=trusty,l=Docker CE,c=stable
+Pin: release o=Docker,a=xenial,l=Docker CE,c=stable,b=amd64
+Pin-Priority: 500
+
+Package: docker-ce-cli
+Pin: release o=Docker,a=xenial,l=Docker CE,c=stable,b=amd64
 Pin-Priority: 500
