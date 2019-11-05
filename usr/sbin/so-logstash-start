@@ -235,7 +235,8 @@ output {
 		key => 'logstash:redis'
 		congestion_interval => 1
 		congestion_threshold => 50000000
-		# batch_events => 500
+		batch => true
+		batch_events => 50
 	}
 }
 EOF
