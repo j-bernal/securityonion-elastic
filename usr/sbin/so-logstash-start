@@ -199,7 +199,8 @@ input {
 		data_type => 'list'
 		key => 'logstash:redis'
 		type => 'redis-input'
-		# threads => 1
+		batch_count => 125
+		threads => 1
 	}
 }
 EOF
