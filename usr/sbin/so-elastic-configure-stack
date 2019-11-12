@@ -20,6 +20,11 @@
 SOCONF="/etc/nsm/securityonion.conf"
 ELASTICONF="$SRC/etc/securityonion-elastic.conf"
 
+FILE=/etc/apt/preferences.d/securityonion-docker
+header "Updating $FILE"
+cp -av $SRC/$FILE $FILE
+echo "Done!"
+
 header "Setting vm.max_map_count to 262144"
 sysctl -w vm.max_map_count=262144
 cp $SRC/etc/sysctl.d/* /etc/sysctl.d/
