@@ -48,8 +48,10 @@ if [ "$KIBANA_ENABLED" = "yes" ]; then
                         echo
                 fi
 
-		# Assuming Elasticsearch is listening, we need to wait for .kibana to go green (timing out after 240s)
-		curl ${ELASTICSEARCH_AUTH} --output /dev/null --silent http://"$ELASTICSEARCH_HOST":"$ELASTICSEARCH_PORT"/_cluster/health/.kibana?wait_for_status=green'&'timeout=240s
+		# If this is an existing installation, we need to wait for .kibana to go green (timing out after 240s)
+		if [ "$KIBANA_VERSION" != "UNKNOWN" ]; then
+			curl ${ELASTICSEARCH_AUTH} --output /dev/null --silent http://"$ELASTICSEARCH_HOST":"$ELASTICSEARCH_PORT"/_cluster/health/.kibana?wait_for_status=green'&'timeout=240s
+		fi
 
                 echo -n "so-kibana: "
                 if docker ps | grep -q so-kibana; then
