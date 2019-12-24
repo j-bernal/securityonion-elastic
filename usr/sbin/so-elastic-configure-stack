@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright 2014,2015,2016,2017,2018,2019 Security Onion Solutions, LLC
+# Copyright 2014,2015,2016,2017,2018,2019,2020 Security Onion Solutions, LLC
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -97,6 +97,9 @@ else
 	# xpack.security.enabled
 	grep "^xpack.security.enabled:" $ES_YAML_BAK >> $ES_YAML
 	
+	# securityonion-elastic: migrate script.* settings from elasticsearch.yml.bak to elasticsearch.yml #1676
+	# https://github.com/Security-Onion-Solutions/security-onion/issues/1676
+	grep "^script.*:" $ES_YAML_BAK >> $ES_YAML
 fi
 
 # Get total installed memory

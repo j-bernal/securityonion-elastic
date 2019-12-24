@@ -18,6 +18,7 @@
     { "rename": 	{ "field": "message2.referrer", 	"target_field": "referrer",		"ignore_missing": true 	} },
     { "rename": 	{ "field": "message2.version", 		"target_field": "version",		"ignore_missing": true 	} },
     { "rename": 	{ "field": "message2.user_agent", 	"target_field": "useragent",		"ignore_missing": true 	} },
+    { "rename": 	{ "field": "message2.origin", 		"target_field": "origin",		"ignore_missing": true 	} },
     { "rename": 	{ "field": "message2.request_body_len", "target_field": "request_body_length",	"ignore_missing": true 	} },
     { "rename": 	{ "field": "message2.response_body_len","target_field": "response_body_length",	"ignore_missing": true 	} },
     { "rename": 	{ "field": "message2.status_code",	"target_field": "status_code",		"ignore_missing": true 	} },

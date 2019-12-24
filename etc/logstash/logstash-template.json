@@ -497,6 +497,14 @@
             }
           }
         },
+        "client_channels":{  
+          "type":"text",
+          "fields":{  
+            "keyword":{  
+              "type":"keyword"
+            }
+          }
+        },
         "client_digital_product_id":{  
           "type":"text",
           "fields":{  
@@ -2089,6 +2097,14 @@
             }
           }
         },
+        "origin":{  
+          "type":"text",
+          "fields":{  
+            "keyword":{  
+              "type":"keyword"
+            }
+          }
+        },
         "original_bytes":{
           "type":"long"
         },
@@ -3396,6 +3412,14 @@
           "type":"text"
         },
         "tty":{  
+          "type":"text",
+          "fields":{  
+            "keyword":{  
+              "type":"keyword"
+            }
+          }
+        },
+        "tunnel_client":{  
           "type":"text",
           "fields":{  
             "keyword":{  

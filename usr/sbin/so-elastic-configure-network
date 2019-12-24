@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright 2014,2015,2016,2017,2018,2019 Security Onion Solutions, LLC
+# Copyright 2014,2015,2016,2017,2018,2019,2020 Security Onion Solutions, LLC
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,19 +28,23 @@ if pgrep -f docker > /dev/null; then
         echo ${DOCKERNET}
 fi
 
-# Configure Docker bridge ip
-if [ ! -f /etc/docker/daemon.json ]; then
-        if [ ! -d /etc/docker ]; then
-                mkdir /etc/docker
-        fi
-        cp ${SRC}/etc/docker/daemon.json /etc/docker/daemon.json
-else
-	. ${SOCONF}
-	if [ -n ${DOCKER_BRIDGE} ]; then
-		DOCKER_DAEMON_BRIDGE=`grep bip /etc/docker/daemon.json | awk '{print $2}' | sed 's/"//g'`
-		if [ "${DOCKER_BRIDGE}" != "${DOCKER_DAEMON_BRIDGE}" ]; then
-			sed -i "s|\"bip\": .*|\"bip\": \"${DOCKER_BRIDGE}\"|" /etc/docker/daemon.json
-			service docker restart
+# Docker daemon.json conflict #1674
+# https://github.com/Security-Onion-Solutions/security-onion/issues/1674
+DAEMONJSON=/etc/docker/daemon.json
+if [ -f $DAEMONJSON ]; then
+	echo "$DAEMONJSON exists."
+	if [ "0bcf8587dea814c9b712064c28da3d82" = $(md5sum $DAEMONJSON | awk '{print $1}') ]; then
+		echo "$DAEMONJSON is original version with default values."
+		rm -f $DAEMONJSON
+		echo "Removed $DAEMONJSON."
+	else
+		. ${SOCONF}
+		if [ -n ${DOCKER_BRIDGE} ]; then
+			DOCKER_DAEMON_BRIDGE=`grep bip $DAEMONJSON | awk '{print $2}' | sed 's/"//g'`
+			if [ "${DOCKER_BRIDGE}" != "${DOCKER_DAEMON_BRIDGE}" ]; then
+				sed -i "s|\"bip\": .*|\"bip\": \"${DOCKER_BRIDGE}\"|" $DAEMONJSON
+				service docker restart
+			fi
 		fi
 	fi
 fi
