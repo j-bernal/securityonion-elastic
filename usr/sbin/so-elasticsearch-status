@@ -22,6 +22,10 @@ if [ "$ELASTICSEARCH_ENABLED" = "yes" ]; then
         if docker ps |  grep -q so-elasticsearch; then
                 ok
         else
-                fail
+		if [ $(cut -d. -f1 /proc/uptime) -lt 120 ]; then
+			warn
+		else
+	                fail
+		fi
         fi
 fi

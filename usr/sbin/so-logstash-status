@@ -36,7 +36,11 @@ if [ "$LOGSTASH_ENABLED" = "yes" ]; then
                    fi
                fi
        else
-               fail
+		if [ $(cut -d. -f1 /proc/uptime) -lt 120 ]; then
+			warn
+		else
+			fail
+		fi
        fi
 fi
 
