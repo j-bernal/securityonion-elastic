@@ -40,12 +40,12 @@ This is a quick and dirty EXPERIMENTAL script that will import one or more pcaps
 It will do the following:
 - run Setup if necessary
 - stop and disable Curator to avoid closing old indices
-- stop and disable all active sniffing processes (Bro, Snort, Suricata, and netsniff-ng)
+- stop and disable all active sniffing processes (Zeek, Snort, Suricata, and netsniff-ng)
 - stop and disable ossec_agent
 - reconfigure and restart sguild where necessary
 - generate IDS alerts using Snort or Suricata
-- generate Bro logs
-- store IDS alerts and Bro logs with original timestamps
+- generate Zeek logs
+- store IDS alerts and Zeek logs with original timestamps
 - split traffic into separate daily pcaps and store them where sguil's pcap_agent can find them
 
 Requirements:
@@ -288,13 +288,13 @@ fi
 
 # stop bro if running
 if pgrep -f /opt/bro/share/zeekctl/scripts/run-zeek >/dev/null 2>&1; then
-	echo "- stopping Bro sniffing process."
+	echo "- stopping Zeek sniffing process."
 	/usr/sbin/so-bro-stop >/dev/null 2>&1
 fi
 
 # disable bro
 if [ "$BRO_ENABLED" = "yes" ]; then
-	echo "- disabling Bro sniffing process."
+	echo "- disabling Zeek sniffing process."
 	sed -i 's|BRO_ENABLED=yes|BRO_ENABLED=no|g' $CONF
 fi
 

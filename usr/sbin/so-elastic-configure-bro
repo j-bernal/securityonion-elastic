@@ -25,13 +25,13 @@ LOCAL="${DIR}/site/local.zeek"
 
 if [ -f ${LOCAL} ] ; then
 
-	# If Bro hasn't already been configured to output JSON,
-	# then we need to configure it and restart Bro.
+	# If Zeek hasn't already been configured to output JSON,
+	# then we need to configure it and restart Zeek.
 	# We also need to handle the case where folks have
 	# manually disabled JSON by commenting out the @load line.
 	if ! grep "@load json-logs" ${LOCAL} >/dev/null 2>&1; then 
 
-		header "Configuring Bro to output in JSON"
+		header "Configuring Zeek to output in JSON"
 
 		cp -av ${SRC}/opt/zeek/share/zeek/json-logs ${DIR}
 
@@ -42,7 +42,7 @@ cat << EOF >> ${LOCAL}
 EOF
 
 		if [ "${BRO_ENABLED}" = "yes" ]; then
-			/usr/sbin/nsm_sensor_ps-restart --only-bro
+			/usr/sbin/so-zeek-restart
 		fi
 	fi
 fi

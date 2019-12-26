@@ -67,5 +67,5 @@ If you would like to import these logs into Elastic, you can move them to /nsm/i
 However, please be aware of a few things:
 
 * Make sure you have plenty of free disk space as this is creating yet another copy of these logs.
-* Logstash parsers only support the current version of Bro.  Older Bro logs may not be parsed properly.
+* Logstash parsers only support the current version of Zeek.  Older Zeek/Bro logs may not be parsed properly.
 EOF

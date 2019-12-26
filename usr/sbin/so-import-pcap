@@ -153,10 +153,10 @@ fi
 # remove lock file to allow others to write IDS alerts
 rm $LOCK
 
-# generate Bro logs and write them to a unique subdirectory in /nsm/import/bro/
+# generate Zeek logs and write them to a unique subdirectory in /nsm/import/bro/
 # since each run writes to a unique subdirectory, there is no need for a lock file
 BRODIR="/nsm/import/bro"
-echo "- analyzing traffic with Bro."
+echo "- analyzing traffic with Zeek."
 mkdir -p $BRODIR
 BROLOGDIR=$(mktemp -d -p $BRODIR -t bro-XXXXXXXX)
 chown $(stat $BRODIR -c %u:%g) $BROLOGDIR

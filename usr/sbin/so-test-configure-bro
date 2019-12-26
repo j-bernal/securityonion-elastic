@@ -17,13 +17,13 @@
 
 . /usr/sbin/so-elastic-common
 
-header "Configuring Bro with sample intel"
+header "Configuring Zeek with sample intel"
 sed -i 's|#66.32.119.38|66.32.119.38|' 						/opt/zeek/share/zeek/intel/intel.dat
 sed -i 's|#www.honeynet.org|www.honeynet.org|' 					/opt/zeek/share/zeek/intel/intel.dat
 sed -i 's|#4285358dd748ef74cb8161108e11cb73|4285358dd748ef74cb8161108e11cb73|' 	/opt/zeek/share/zeek/intel/intel.dat
 
-header "Restarting Bro"
-/usr/sbin/nsm_sensor_ps-restart --only-bro
+header "Restarting Zeek"
+/usr/sbin/so-zeek-restart
 
 echo "Done!"
 
