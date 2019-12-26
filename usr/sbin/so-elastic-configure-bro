@@ -19,23 +19,23 @@
 
 . /etc/nsm/securityonion.conf
 
-BRO="/opt/bro/share/bro"
+DIR="/opt/zeek/share/zeek"
 
-LOCALBRO="${BRO}/site/local.bro"
+LOCAL="${DIR}/site/local.zeek"
 
-if [ -f ${LOCALBRO} ] ; then
+if [ -f ${LOCAL} ] ; then
 
 	# If Bro hasn't already been configured to output JSON,
 	# then we need to configure it and restart Bro.
 	# We also need to handle the case where folks have
 	# manually disabled JSON by commenting out the @load line.
-	if ! grep "@load json-logs" ${LOCALBRO} >/dev/null 2>&1; then 
+	if ! grep "@load json-logs" ${LOCAL} >/dev/null 2>&1; then 
 
 		header "Configuring Bro to output in JSON"
 
-		cp -av ${SRC}/opt/bro/share/bro/json-logs ${BRO}
+		cp -av ${SRC}/opt/zeek/share/zeek/json-logs ${DIR}
 
-cat << EOF >> ${LOCALBRO}
+cat << EOF >> ${LOCAL}
 
 # Output logs in JSON format
 @load json-logs

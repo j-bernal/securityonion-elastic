@@ -287,7 +287,7 @@ if [ "$OSSEC_AGENT_ENABLED" = "yes" ]; then
 fi
 
 # stop bro if running
-if pgrep -f /opt/bro/share/broctl/scripts/run-bro >/dev/null 2>&1; then
+if pgrep -f /opt/bro/share/zeekctl/scripts/run-zeek >/dev/null 2>&1; then
 	echo "- stopping Bro sniffing process."
 	/usr/sbin/so-bro-stop >/dev/null 2>&1
 fi
