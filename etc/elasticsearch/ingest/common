@@ -9,6 +9,34 @@
 	}
     },
     { 	
+	"append":  { 
+		"field": "ips",
+		"value": ["{{destination_ip}}"],
+		"ignore_failure": true
+	}
+    },
+    { 	
+	"append":  { 
+		"field": "ips",
+		"value": ["{{source_ip}}"],
+		"ignore_failure": true
+	}
+    },
+    { 	
+	"append":  { 
+		"field": "destination_ips",
+		"value": ["{{destination_ip}}"],
+		"ignore_failure": true
+	}
+    },
+    { 	
+	"append":  { 
+		"field": "source_ips",
+		"value": ["{{source_ip}}"],
+		"ignore_failure": true
+	}
+    },
+    { 	
 	"geoip":  { 
 		"field": "destination_ip",
 		"target_field": "destination_geo",
