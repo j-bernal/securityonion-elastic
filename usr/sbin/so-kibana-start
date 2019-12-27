@@ -17,6 +17,10 @@
 
 . /usr/sbin/so-elastic-common
 
+# Define a default timeout value
+ELASTICSEARCH_TIMEOUT=480
+
+# Allow the user to override the default setting
 . /etc/nsm/securityonion.conf
 
 if [ "$KIBANA_ENABLED" = "yes" ]; then
@@ -30,7 +34,7 @@ if [ "$KIBANA_ENABLED" = "yes" ]; then
                 echo -n "Waiting for ElasticSearch..."
                 COUNT=0
                 ELASTICSEARCH_CONNECTED="no"
-                while [[ "$COUNT" -le 240 ]]; do
+                while [[ "$COUNT" -le $ELASTICSEARCH_TIMEOUT ]]; do
                         curl ${ELASTICSEARCH_AUTH} --output /dev/null --silent --head --fail http://"$ELASTICSEARCH_HOST":"$ELASTICSEARCH_PORT"
                         if [ $? -eq 0 ]; then
                                 ELASTICSEARCH_CONNECTED="yes"
