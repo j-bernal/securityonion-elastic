@@ -21,6 +21,7 @@
 
 LOGSTASH_CONFD="/etc/logstash/conf.d"
 CUSTOM_CONF="/etc/logstash/custom"
+CUSTOM_INGEST="/etc/elasticsearch/custom"
 LOG="/var/log/logstash/logstash.log"
 
 #########################################
@@ -87,6 +88,13 @@ if [ "$LOGSTASH_ENABLED" = "yes" ]; then
 		else
 			mkdir $CUSTOM_CONF
 		fi
+
+                if [ -d $CUSTOM_INGEST ]; then
+			rsync $CUSTOM_INGEST/* /etc/elasticsearch/ingest >/dev/null 2>&1
+		else
+			mkdir $CUSTOM_INGEST
+		fi
+
 		if [ "$FREQ_SERVER_ENABLED" = "yes" ]; then
 			ln -sf ../conf.d.available/8502_postprocess_freq_analysis_bro_dns.conf /etc/logstash/conf.d/8502_postprocess_freq_analysis_bro_dns.conf
 			ln -sf ../conf.d.available/8503_postprocess_freq_analysis_bro_http.conf /etc/logstash/conf.d/8503_postprocess_freq_analysis_bro_http.conf
