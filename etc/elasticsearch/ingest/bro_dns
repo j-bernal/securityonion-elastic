@@ -30,6 +30,7 @@
     { "rename": 	{ "field": "message2.TTLs", 		"target_field": "ttls",			"ignore_missing": true 	} },
     { "rename": 	{ "field": "message2.rejected", 	"target_field": "rejected",		"ignore_missing": true 	} },
     { "script": 	{ "lang": "painless", "source": "ctx.query_length = ctx.query.length()",	"ignore_failure": true  } },
-    { "pipeline":       { "name": "bro_common"											} }
+    { "pipeline":       { "if": "ctx.query_type_name != 'NB' && ctx.query_type_name != 'TKEY' && ctx.query_type_name != 'NBSTAT' && ctx.query_type_name != 'PTR'", "name": "bro_dns_tld"} },
+    { "pipeline":	{ "name": "bro_common"											} }
   ]
 }
