@@ -138,6 +138,22 @@ if [ "$LOGSTASH_ENABLED" = "yes" ]; then
 				cp /etc/logstash/conf.d.available/9000_output_bro.conf 				$LOGSTASH_CONFD/9000_output_bro.conf
 		                sed -i 's|elasticsearch {|elasticsearch {\n      pipeline => "%{event_type}"|' 	$LOGSTASH_CONFD/9000_output_bro.conf
 			fi
+			if ! [ -f $LOGSTASH_CONFD/9201_output_filterlog.conf ]; then
+cat << EOF > $LOGSTASH_CONFD/9201_output_filterlog.conf
+output {
+  if [event_type] == "filterlog" {
+    elasticsearch {
+      pipeline => "%{event_type}"
+      hosts => elasticsearch
+      index => "logstash-firewall-%{+YYYY.MM.dd}"
+      template_name => "logstash"
+      template => "/logstash-template.json"
+      template_overwrite => true
+    }
+  }
+}
+EOF
+			fi
 			if ! [ -f $LOGSTASH_CONFD/9033_output_snort.conf ]; then
 				cp /etc/logstash/conf.d.available/9033_output_snort.conf 			$LOGSTASH_CONFD/9033_output_snort.conf
 		                sed -i 's|elasticsearch {|elasticsearch {\n      pipeline => "%{event_type}"|' 	$LOGSTASH_CONFD/9033_output_snort.conf

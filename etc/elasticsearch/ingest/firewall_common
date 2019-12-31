@@ -1,0 +1,7 @@
+{
+  "description" : "firewall_common",
+  "processors" : [
+    { "append":         { "field": "tags", "value": ["firewall"]	} },
+    { "pipeline":	{ "name": "common" 				} }
+  ]
+}

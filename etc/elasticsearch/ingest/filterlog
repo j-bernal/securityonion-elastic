@@ -1,0 +1,57 @@
+{
+  "description" : "filterlog",
+  "processors" : [
+    {
+	"dissect": {
+		"field": "message",
+		"pattern" : "%{rule_number},%{sub_rule_number},%{anchor},%{tracker_id},%{interface},%{reason},%{action},%{direction},%{ip_version},%{sub_msg}",
+		"on_failure": [ { "drop" : { } } ]
+	}
+    },
+    {
+	"dissect": {
+		"if": "ctx.ip_version == '4'",
+		"field": "sub_msg",
+		"pattern" : "%{ipv4_tos},%{ipv4_ecn},%{ipv4_ttl},%{ipv4_id},%{ipv4_offset},%{ipv4_flags},%{protocol_id},%{protocol},%{protocol_length},%{source_ip},%{destination_ip},%{ip_sub_msg}",
+		"on_failure": [ { "drop" : { } } ]
+	}
+    },
+    {
+	"dissect": {
+		"if": "ctx.ip_version == '6'",
+		"field": "sub_msg",
+		"pattern" : "%{class},%{flow_label},%{hop_limit},%{protocol},%{protocol_id},%{length},%{source_ip},%{destination_ip},%{ip_sub_msg}",
+		"on_failure": [ { "drop" : { } } ]
+	}
+    },
+    {
+	"dissect": {
+		"if": "ctx.protocol == 'tcp'",
+		"field": "ip_sub_msg",
+		"pattern" : "%{source_port},%{destination_port},%{data_length},%{tcp_flags},",
+		"on_failure": [ { "drop" : { } } ]
+	}
+    },
+    {
+	"dissect": {
+		"if": "ctx.protocol == 'udp'",
+		"field": "ip_sub_msg",
+		"pattern" : "%{source_port},%{destination_port},%{data_length}",
+		"on_failure": [ { "drop" : { } } ]
+	}
+    },
+    {
+	"split": {
+		"if": "ctx.ip_version == '6' && ctx.protocol == 'Options'",
+		"field": "ip_sub_msg",
+		"target_field": "options",
+		"separator" : ","
+	}
+    },
+    { "remove":		{ "field": "sub_msg",				"ignore_missing": true  } },
+    { "remove":		{ "field": "ip_sub_msg",			"ignore_missing": true  } },
+    { "set":		{ "field": "event_type", "value": "firewall"				} },
+    { "append": 	{ "field": "tags", "value": ["pfsense"]					} },
+    { "pipeline":	{ "name": "firewall_common" 						} }
+  ]
+}
