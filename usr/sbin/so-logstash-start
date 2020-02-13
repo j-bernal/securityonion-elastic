@@ -83,8 +83,12 @@ if [ "$LOGSTASH_ENABLED" = "yes" ]; then
 		fi
 
                 if [ -d $CUSTOM_CONF ]; then
-			rsync $CUSTOM_CONF/*.conf /etc/logstash/conf.d >/dev/null 2>&1
-                        rsync $CUSTOM_CONF/*.json /etc/logstash/ >/dev/null 2>&1
+			if [ "$LOGSTASH_MINIMAL" = "yes" ]; then
+				rsync $CUSTOM_CONF/*.conf /etc/logstash/conf.d.minimal >/dev/null 2>&1
+			else
+				rsync $CUSTOM_CONF/*.conf /etc/logstash/conf.d >/dev/null 2>&1
+			fi
+				rsync $CUSTOM_CONF/*.json /etc/logstash/ >/dev/null 2>&1
 		else
 			mkdir $CUSTOM_CONF
 		fi
