@@ -72,108 +72,41 @@ for i in "$@"; do
 done
 
 echo "Please wait while:"
+echo
 
 # track any temporary pcaps so they can be deleted when finished
 TEMP_PCAPS=()
 
-# are we processing a single pcap or multiple pcaps?
-if [ $# -eq 1 ]; then
-	# single pcap
-	# so-import-pcap: improve handling of single pcap without full path #1540
-	# https://github.com/Security-Onion-Solutions/security-onion/issues/1540
-	PCAP=$(/usr/bin/realpath $1)
-	echo "- checking ${PCAP} for corruption."
-	if ! /usr/bin/capinfos ${PCAP} >/dev/null 2>&1; then
+# track oldest start and newest end so that we can generate the Kibana search hyperlink at the end
+START_OLDEST="2030-12-31"
+END_NEWEST="1971-01-01"
+
+# paths must be quoted in case they include spaces
+for PCAP in "$@"; do
+	PCAP=$(/usr/bin/realpath "$PCAP")
+	echo "- checking ${PCAP}"
+	if ! /usr/bin/capinfos "${PCAP}" >/dev/null 2>&1; then
 		# try to fix pcap and then process the fixed pcap directly
 		PCAP_FIXED=`mktemp /tmp/so-import-pcap-XXXXXXXXXX.pcap`
 		echo "- attempting to recover ${PCAP} to ${PCAP_FIXED}."
-		/usr/bin/pcapfix ${PCAP} -o ${PCAP_FIXED} >/dev/null
+		/usr/bin/pcapfix "${PCAP}" -o "${PCAP_FIXED}" >/dev/null
 		PCAP="${PCAP_FIXED}"
 		TEMP_PCAPS+=(${PCAP_FIXED})
 	fi
-else
-	# multiple pcaps
-	PCAPS=()
-	for PCAP in $@; do
-		echo "- checking $PCAP for corruption."
-		if /usr/bin/capinfos $PCAP >/dev/null 2>&1; then
-			# if the pcap is valid, add it to the PCAPS array
-			echo "- adding $PCAP to array for merging."
-			PCAPS+=(${PCAP})
-		else
-			# otherwise, try to fix it and then add the fixed pcap to PCAPS and TEMP_PCAPS arrays
-			PCAP_FIXED=`mktemp /tmp/so-import-pcap-XXXXXXXXXX.pcap`
-			echo "- attempting to recover ${PCAP} to ${PCAP_FIXED}."
-			/usr/bin/pcapfix ${PCAP} -o ${PCAP_FIXED} >/dev/null
-			PCAPS+=(${PCAP_FIXED})
-			TEMP_PCAPS+=(${PCAP_FIXED})
-		fi
-	done
 
-	# create temp pcap and set permissions
-	PCAP=`mktemp /tmp/so-import-pcap-XXXXXXXXXX.pcap`
-	echo "- creating temp pcap $PCAP for processing."
-	if ! /usr/bin/mergecap -F pcap -w $PCAP ${PCAPS[@]}; then
-		echo "Error while merging!"
+	# check to see if file is a valid PCAP
+	if /usr/bin/capinfos "${PCAP}" |grep -q "Last packet time:    1970-01-01"; then
+		echo "Invalid pcap file!"
 		exit
 	fi
-	chmod 444 $PCAP
-	TEMP_PCAPS+=(${PCAP})
-fi
 
-# check to see if file is a valid PCAP
-/usr/bin/capinfos $PCAP 2>&1 | grep "The file appears to be damaged or corrupt." && exit
+	CONF="/etc/nsm/securityonion.conf"
+	source $CONF
 
-CONF="/etc/nsm/securityonion.conf"
-source $CONF
-
-# check to see if another instance of so-import-pcap is already writing IDS alerts 
-LOCK="/var/lock/so-import-pcap-ids"
-if [ -f $LOCK ] ; then
-	echo -n "- waiting for another instance of so-import-pcap to finish writing IDS alerts..."
-	while [ -f $LOCK ]; do 
-		sleep 1s
-		echo -n "."
-	done
-	echo
-fi
-
-# create a new lock file before writing IDS alerts to prevent others from trying to write at same time
-touch $LOCK
-
-# generate IDS alerts and write them to standard pipeline for consumption via Sguil agents
-if [ "$ENGINE" = "snort" ]; then
-	echo "- analyzing traffic with Snort."
-	/usr/bin/snort --daq pcap -c /etc/nsm/$SENSORNAME/snort.conf -u sguil -g sguil -l /nsm/sensor_data/$SENSORNAME/snort-1 -k none -r $PCAP >/dev/null 2>&1
-else
-	echo "- analyzing traffic with Suricata."
-	/usr/bin/suricata --user sguil --group sguil -c /etc/nsm/$SENSORNAME/suricata.yaml -l /nsm/sensor_data/$SENSORNAME --runmode single -k none -r $PCAP >/dev/null 2>&1
-fi
-
-# remove lock file to allow others to write IDS alerts
-rm $LOCK
-
-# generate Zeek logs and write them to a unique subdirectory in /nsm/import/bro/
-# since each run writes to a unique subdirectory, there is no need for a lock file
-BRODIR="/nsm/import/bro"
-echo "- analyzing traffic with Zeek."
-mkdir -p $BRODIR
-BROLOGDIR=$(mktemp -d -p $BRODIR -t bro-XXXXXXXX)
-chown $(stat $BRODIR -c %u:%g) $BROLOGDIR
-chmod $(stat $BRODIR -c %a) $BROLOGDIR
-cd $BROLOGDIR
-/opt/bro/bin/bro -C -r $PCAP local >/dev/null 2>&1
-cd - >/dev/null
-
-source $SENSORCONF
-
-# split traffic into daily directories so that sguil's pcap_agent can find it
-if [ "$PCAP_AGENT_ENABLED" = "yes" ] ; then
-
-	# check to see if another instance of so-import-pcap is already writing to pcap store
-	LOCK="/var/lock/so-import-pcap"
+	# check to see if another instance of so-import-pcap is already writing IDS alerts 
+	LOCK="/var/lock/so-import-pcap-ids"
 	if [ -f $LOCK ] ; then
-		echo -n "- waiting for another instance of so-import-pcap to release its lock on the pcap store..."
+		echo -n "- waiting for another instance of so-import-pcap to finish writing IDS alerts..."
 		while [ -f $LOCK ]; do 
 			sleep 1s
 			echo -n "."
@@ -181,46 +114,109 @@ if [ "$PCAP_AGENT_ENABLED" = "yes" ] ; then
 		echo
 	fi
 
-	# create a new lock file before writing to pcap store to prevent others from trying to write at same time
+	# create a new lock file before writing IDS alerts to prevent others from trying to write at same time
 	touch $LOCK
 
-	START=`/usr/bin/capinfos $PCAP -a |grep "First packet time:" | awk '{print $4}'`
-	END=`/usr/bin/capinfos $PCAP -e |grep "Last packet time:" | awk '{print $4}'`
-	ENDNEXT=`date +%Y-%m-%d --date="$END 1 day"`
-	CURRENT="$START"
-	while [ "$CURRENT" != "$ENDNEXT" ]; do
-		EPOCH=`date +%s --date="$CURRENT"`
-		PCAPDIR="/nsm/sensor_data/$SENSORNAME/dailylogs/$CURRENT"
-		FILE="$PCAPDIR/snort.log.$EPOCH"
-		mkdir -p $PCAPDIR
-		CURRENTNEXT=`date +%Y-%m-%d --date="$CURRENT 1 day"`
-		if [ -f $FILE ]; then
-			PCAPNEW=`mktemp /tmp/so-import-pcap-XXXXXXXXXX.pcap`
-			echo "- copying traffic to $PCAPNEW."
-			/usr/bin/editcap -F libpcap -A "$CURRENT 00:00:00" -B "$CURRENTNEXT 00:00:00" $PCAP $PCAPNEW
-			FILEOLD=`mktemp /tmp/so-import-pcap-XXXXXXXXXX.pcap`
-			echo "- copying $FILE to $FILEOLD."
-			cp $FILE $FILEOLD
-			echo "- merging $FILEOLD and $PCAPNEW into $FILE."
-			/usr/bin/mergecap -F pcap -w $FILE $FILEOLD $PCAPNEW		
-			echo "- removing $FILEOLD and $PCAPNEW."
-			rm $FILEOLD $PCAPNEW
-		else
-			echo "- writing $FILE."
-			/usr/bin/editcap -F libpcap -A "$CURRENT 00:00:00" -B "$CURRENTNEXT 00:00:00" $PCAP $FILE
-		fi
+	# generate IDS alerts and write them to standard pipeline for consumption via Sguil agents
+	if [ "$ENGINE" = "snort" ]; then
+		echo "- analyzing traffic with Snort"
+		/usr/bin/snort --daq pcap -c /etc/nsm/$SENSORNAME/snort.conf -u sguil -g sguil -l /nsm/sensor_data/$SENSORNAME/snort-1 -k none -r "${PCAP}" >/dev/null 2>&1
+	else
+		echo "- analyzing traffic with Suricata"
+		/usr/bin/suricata --user sguil --group sguil -c /etc/nsm/$SENSORNAME/suricata.yaml -l /nsm/sensor_data/$SENSORNAME --runmode single -k none -r "${PCAP}" >/dev/null 2>&1
+	fi
 
-		CURRENT=`date +%Y-%m-%d --date="$CURRENT 1 day"`
-	done
-
-	# remove lock file to allow others to write to the pcap store
+	# remove lock file to allow others to write IDS alerts
 	rm $LOCK
 
-fi
+	# generate Zeek logs and write them to a unique subdirectory in /nsm/import/bro/
+	# since each run writes to a unique subdirectory, there is no need for a lock file
+	BRODIR="/nsm/import/bro"
+	echo "- analyzing traffic with Zeek"
+	mkdir -p $BRODIR
+	BROLOGDIR=$(mktemp -d -p $BRODIR -t bro-XXXXXXXX)
+	chown $(stat $BRODIR -c %u:%g) $BROLOGDIR
+	chmod $(stat $BRODIR -c %a) $BROLOGDIR
+	cd $BROLOGDIR
+	/opt/bro/bin/bro -C -r "${PCAP}" local >/dev/null 2>&1
+	cd - >/dev/null
+
+	source $SENSORCONF
+
+	# split traffic into daily directories so that sguil's pcap_agent can find it
+	if [ "$PCAP_AGENT_ENABLED" = "yes" ] ; then
+
+		# check to see if another instance of so-import-pcap is already writing to pcap store
+		LOCK="/var/lock/so-import-pcap"
+		if [ -f $LOCK ] ; then
+			echo -n "- waiting for another instance of so-import-pcap to release its lock on the pcap store..."
+			while [ -f $LOCK ]; do 
+				sleep 1s
+				echo -n "."
+			done
+			echo
+		fi
+
+		# create a new lock file before writing to pcap store to prevent others from trying to write at same time
+		touch $LOCK
+
+		START=`/usr/bin/capinfos "${PCAP}" -a |grep "First packet time:" | awk '{print $4}'`
+		END=`/usr/bin/capinfos "${PCAP}" -e |grep "Last packet time:" | awk '{print $4}'`
+		ENDNEXT=`date +%Y-%m-%d --date="$END 1 day"`
+		CURRENT="$START"
+
+		# compare $START to $START_OLDEST
+		echo "- processing pcap dates $START through $END"
+		START_COMPARE=$(date -d $START +%s)
+		START_OLDEST_COMPARE=$(date -d $START_OLDEST +%s)
+		if [ $START_COMPARE -lt $START_OLDEST_COMPARE ]; then
+			START_OLDEST=$START
+		fi  
+
+		# compare $ENDNEXT to $END_NEWEST
+		ENDNEXT_COMPARE=$(date -d $ENDNEXT +%s)
+		END_NEWEST_COMPARE=$(date -d $END_NEWEST +%s)
+		if [ $ENDNEXT_COMPARE -gt $END_NEWEST_COMPARE ]; then
+			END_NEWEST=$ENDNEXT
+		fi  
+
+		while [ "$CURRENT" != "$ENDNEXT" ]; do
+			echo "  - processing $CURRENT"
+			EPOCH=`date +%s --date="$CURRENT"`
+			PCAPDIR="/nsm/sensor_data/$SENSORNAME/dailylogs/$CURRENT"
+			FILE="$PCAPDIR/snort.log.$EPOCH"
+			mkdir -p $PCAPDIR
+			CURRENTNEXT=`date +%Y-%m-%d --date="$CURRENT 1 day"`
+			if [ -f $FILE ]; then
+				PCAPNEW=`mktemp /tmp/so-import-pcap-XXXXXXXXXX.pcap`
+				echo "    - copying traffic to $PCAPNEW"
+				/usr/bin/editcap -F libpcap -A "$CURRENT 00:00:00" -B "$CURRENTNEXT 00:00:00" "${PCAP}" "${PCAPNEW}"
+				FILEOLD=`mktemp /tmp/so-import-pcap-XXXXXXXXXX.pcap`
+				echo "    - copying $FILE to $FILEOLD"
+				cp $FILE $FILEOLD
+				echo "    - merging $FILEOLD and $PCAPNEW into $FILE"
+				/usr/bin/mergecap -F pcap -w $FILE $FILEOLD "${PCAPNEW}"
+				echo "    - removing $FILEOLD and $PCAPNEW"
+				rm $FILEOLD "${PCAPNEW}"
+			else
+				echo "    - writing $FILE"
+				/usr/bin/editcap -F libpcap -A "$CURRENT 00:00:00" -B "$CURRENTNEXT 00:00:00" "${PCAP}" $FILE
+			fi
+
+			CURRENT=`date +%Y-%m-%d --date="$CURRENT 1 day"`
+		done
+
+		# remove lock file to allow others to write to the pcap store
+		rm $LOCK
+
+	fi
+
+	echo
+done
 
 # remove temp files
 for TEMP_PCAP in ${TEMP_PCAPS[@]}; do
-	echo "- removing temporary pcap $TEMP_PCAP."
+	echo "- removing temporary pcap $TEMP_PCAP"
 	rm -f $TEMP_PCAP
 done
 
@@ -230,10 +226,10 @@ cat << EOF
 Import complete!
 
 You can use the following hyperlink to view data in the time range of your import.  You can triple-click to quickly highlight the entire hyperlink and you can then copy it into your browser:
-https://localhost/app/kibana#/dashboard/94b52620-342a-11e7-9d52-4f090484f59e?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:'${START}T00:00:00.000Z',mode:absolute,to:'${ENDNEXT}T00:00:00.000Z'))
+https://localhost/app/kibana#/dashboard/94b52620-342a-11e7-9d52-4f090484f59e?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:'${START_OLDEST}T00:00:00.000Z',mode:absolute,to:'${END_NEWEST}T00:00:00.000Z'))
 
 or you can manually set your Time Range to be:
-From: $START    To: $ENDNEXT
+From: $START_OLDEST    To: $END_NEWEST
 
 Please note that it may take 30 seconds or more for events to appear in Kibana.
 EOF
