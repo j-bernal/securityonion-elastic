@@ -238,7 +238,11 @@ host=localhost
 interface=$INTERFACE
 EOF
 fi
-	
+
+# so-import-pcap: enable file-extraction #1715
+# https://github.com/Security-Onion-Solutions/security-onion/issues/1715
+sed -i 's|^#@load file-extraction|@load file-extraction|g' /opt/zeek/share/zeek/site/local.zeek
+
 # make sure sguild is running with DEBUG 2
 SGUILDCONF="/etc/sguild/sguild.conf"
 if ! grep "set DEBUG 2" $SGUILDCONF >/dev/null 2>&1; then
