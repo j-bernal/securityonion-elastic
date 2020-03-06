@@ -46,12 +46,26 @@
 	}
     },
     { 
+	"rename": {
+		"field": "destination_geo.region_iso_code",
+		"target_field": "destination_geo.region_code",
+		"ignore_missing": true
+	}
+    },
+    { 
 	"geoip":  {
 		"field": "source_ip",
 		"target_field": "source_geo",
 		"database_file": "GeoLite2-City.mmdb",
 		"ignore_missing": true,
 		"properties": ["ip", "country_name", "region_iso_code", "region_name", "city_name", "timezone", "location"]
+	}
+    },
+    { 
+	"rename": {
+		"field": "source_geo.region_iso_code",
+		"target_field": "source_geo.region_code",
+		"ignore_missing": true
 	}
     },
     { 
