@@ -336,7 +336,7 @@ if ! grep -q "LOGSTASH_OUTPUT_INGEST" /etc/nsm/securityonion.conf; then
 
 	# Wait until Elasticsearch and Logstash are initialized
 	echo -n "- initializing Elasticsearch and Logstash (this may take a few minutes)..."
-	until fgrep -qs "adding template [logstash-" /var/log/elasticsearch/${CLUSTER_NAME}.log; do
+	until fgrep -qs "adding template [logstash" /var/log/elasticsearch/${CLUSTER_NAME}.log; do
 		echo -n "."
 		sleep 1s
 	done
