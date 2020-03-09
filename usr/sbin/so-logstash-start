@@ -206,7 +206,7 @@ output {
       hosts => elasticsearch
       index => "logstash-import-%{+YYYY.MM.dd}"
       pipeline => "%{type}"
-      template_name => "logstash-*"
+      template_name => "logstash"
       template => "/logstash-template.json"
       template_overwrite => true
     }
