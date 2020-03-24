@@ -78,6 +78,11 @@ echo
 service syslog-ng stop
 echo
 
+# Stop Elastalert
+echo
+/usr/sbin/so-elastalert-stop > /dev/null 2>&1
+echo
+
 # Restart bro to clear logs
 echo
 /usr/sbin/so-bro-restart > /dev/null 2>&1
@@ -94,6 +99,11 @@ done
 # Start syslog-ng
 echo
 service syslog-ng start
+echo
+
+# Start Elastalert
+echo
+/usr/sbin/so-elastalert-start > /dev/null 2>&1
 echo
 
 # Message to user
