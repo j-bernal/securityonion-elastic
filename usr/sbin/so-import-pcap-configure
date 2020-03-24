@@ -35,10 +35,10 @@ cat << EOF
 
 so-import-pcap
 
-This is a quick and dirty EXPERIMENTAL script that will import one or more pcaps into Security Onion and preserve original timestamps.
+This script will import one or more pcaps into Security Onion and preserve original timestamps.
 
 It will do the following:
-- run Setup if necessary
+- automatically run Setup to configure the system if necessary
 - stop and disable Curator to avoid closing old indices
 - stop and disable all active sniffing processes (Zeek, Snort, Suricata, and netsniff-ng)
 - stop and disable ossec_agent
