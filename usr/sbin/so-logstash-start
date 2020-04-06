@@ -129,8 +129,17 @@ if [ "$LOGSTASH_ENABLED" = "yes" ]; then
 			if ! [ -f $LOGSTASH_CONFD/0000_input_syslogng.conf ]; then
 				ln -sf ../conf.d.available/0000_input_syslogng.conf 				$LOGSTASH_CONFD/0000_input_syslogng.conf
 			fi
+			if ! [ -f $LOGSTASH_CONFD/0006_input_beats.conf ]; then
+				ln -sf ../conf.d.available/0006_input_beats.conf 				$LOGSTASH_CONFD/0006_input_beats.conf
+			fi
 			if ! [ -f $LOGSTASH_CONFD/1001_preprocess_syslogng.conf ]; then
 				ln -sf ../conf.d.available/1001_preprocess_syslogng.conf 			$LOGSTASH_CONFD/1001_preprocess_syslogng.conf
+			fi
+			if [ -f $LOGSTASH_CONFD/6600_winlogbeat_sysmon.conf ]; then
+				rm -f $LOGSTASH_CONFD/6600_winlogbeat_sysmon.conf
+			fi
+			if [ -f $LOGSTASH_CONFD/6700_winlogbeat.conf ]; then
+				rm -f $LOGSTASH_CONFD/6700_winlogbeat.conf
 			fi
 			if ! [ -f $LOGSTASH_CONFD/8999_postprocess_rename_type.conf ]; then
 				ln -sf ../conf.d.available/8999_postprocess_rename_type.conf 			$LOGSTASH_CONFD/8999_postprocess_rename_type.conf
@@ -161,6 +170,12 @@ EOF
 			if ! [ -f $LOGSTASH_CONFD/9033_output_snort.conf ]; then
 				cp /etc/logstash/conf.d.available/9033_output_snort.conf 			$LOGSTASH_CONFD/9033_output_snort.conf
 		                sed -i 's|elasticsearch {|elasticsearch {\n      pipeline => "%{event_type}"|' 	$LOGSTASH_CONFD/9033_output_snort.conf
+			fi
+			if ! [ -f $LOGSTASH_CONFD/9500_output_beats.conf ]; then
+				cp /etc/logstash/conf.d.available/9500_output_beats.conf 			$LOGSTASH_CONFD/9500_output_beats.conf
+			fi
+			if ! grep -q 'pipeline => "beats"' $LOGSTASH_CONFD/9500_output_beats.conf; then
+		                sed -i 's|elasticsearch {|elasticsearch {\n      pipeline => "beats"|' 		$LOGSTASH_CONFD/9500_output_beats.conf
 			fi
 			if ! [ -f $LOGSTASH_CONFD/9600_output_ossec.conf ]; then
 				cp /etc/logstash/conf.d.available/9600_output_ossec.conf			$LOGSTASH_CONFD/9600_output_ossec.conf
