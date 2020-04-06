@@ -1,0 +1,8 @@
+{
+  "description" : "beats",
+  "processors" : [
+    { "rename":		{ "field": "host",	"target_field": "beat_host",	"ignore_missing": true	} },
+    { "pipeline":	{ "if": "ctx.source_name == 'Microsoft-Windows-Sysmon'", "name": "beats_sysmon"	} },
+    { "pipeline":	{ "name": "common" 								} }
+  ]
+}
