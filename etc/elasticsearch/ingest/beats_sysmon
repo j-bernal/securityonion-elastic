@@ -2,7 +2,6 @@
   "description" : "beats_sysmon",
   "processors" : [
     { "set":		{ "field": "event_type", "value": "sysmon"										} },
-    { "rename": 	{ "field": "data.sysmon.targetfilename",		"target_field": "target_filename",	"ignore_missing": true 	} },
     { "rename": 	{ "field": "event_data.User", 				"target_field": "username",		"ignore_missing": true 	} },
     { "rename": 	{ "field": "event_data.DestinationPort",		"target_field": "destination_port",	"ignore_missing": true 	} },
     { "rename": 	{ "field": "event_data.DestinationIp",			"target_field": "destination_ip",	"ignore_missing": true 	} },
