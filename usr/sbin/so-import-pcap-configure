@@ -23,6 +23,12 @@ if ! [ -f $COMMON ]; then
 fi
 source $COMMON
 
+HOST_ORIG=`hostname`
+HOSTNAME=${HOST_ORIG,,}
+SENSORNAME="$HOSTNAME-import"
+SENSOR="$HOSTNAME-import"
+SENSORCONF="/etc/nsm/$SENSORNAME/sensor.conf"
+
 # check to see if this is a sensor before continuing
 if [ -f /root/.ssh/securityonion_ssh.conf ]; then
 	echo "This machine appears to be a sensor connected to a distributed deployment."
