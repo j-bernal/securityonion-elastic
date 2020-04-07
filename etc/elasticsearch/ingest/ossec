@@ -32,6 +32,7 @@
     { "rename": 	{ "field": "predecoder.program_name", 			"target_field": "process",		"ignore_missing": true 	} },
     { "rename": 	{ "field": "wazuh-rule.level", 				"target_field": "alert_level",		"ignore_missing": true 	} },
     { "rename": 	{ "field": "wazuh-rule.description", 			"target_field": "description",		"ignore_missing": true 	} },
+    { "set": 		{ "if": "ctx.data?.win?.system?.providerName == 'Microsoft-Windows-Sysmon'","field": "event_type","value": "sysmon"	} },
     { "set": 		{ "if": "ctx.alert_level == 1", 		"field": "classification", "value": "None" 				} },
     { "set": 		{ "if": "ctx.alert_level == 2", 		"field": "classification", "value": "System low priority notification" 	} },
     { "set": 		{ "if": "ctx.alert_level == 3", 		"field": "classification", "value": "Successful/authorized event" 	} },
